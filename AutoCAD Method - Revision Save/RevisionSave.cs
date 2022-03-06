@@ -78,11 +78,12 @@ namespace AutoCAD_Method___Revision_Save
                     using (Database db = doc.Database)
                     {
                         db.SaveAs(newFileName, DwgVersion.Current);
+                        _ = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.Open(newFileName, false);
                         db.CloseInput(true);
                     }
 
                     doc.CloseAndSave(originalFileName);
-                    _ = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.Open(newFileName, false);
+                    
                 }
                 else
                 {
@@ -106,11 +107,15 @@ namespace AutoCAD_Method___Revision_Save
                     using (Database db = doc.Database)
                     {
                         db.SaveAs(newFileName, DwgVersion.Current);
+
+                        _ = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.Open(newFileName, false);
+
+
+
                         db.CloseInput(true);
                     }
                    
-                    _ = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.Open(newFileName, false);
-
+                    
                     doc.CloseAndSave(originalFileName);
                     File.Move(originalFileName, reFileName);
                 }
