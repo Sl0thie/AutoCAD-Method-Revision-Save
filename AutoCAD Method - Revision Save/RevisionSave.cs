@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Interop;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.Geometry;
-using Autodesk.AutoCAD.EditorInput;
 using System.IO;
-using Autodesk.AutoCAD.GraphicsSystem;
 
 namespace AutoCAD_Method___Revision_Save
 {
@@ -21,8 +14,9 @@ namespace AutoCAD_Method___Revision_Save
         /// </summary>
         public void Initialize()
         {
+            //
             AcadApplication cadApp = (AcadApplication)Application.AcadApplication;
-            AcadToolbar tb = cadApp.MenuGroups.Item(0).Toolbars.Add("ExternalMethods");
+            AcadToolbar tb = cadApp.MenuGroups.Item(0).Toolbars.Add("External Methods");
             tb.Dock(Autodesk.AutoCAD.Interop.Common.AcToolbarDockStatus.acToolbarDockLeft);
             string basePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
@@ -79,11 +73,20 @@ namespace AutoCAD_Method___Revision_Save
                     {
                         db.SaveAs(newFileName, DwgVersion.Current);
                         _ = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.Open(newFileName, false);
-                        db.CloseInput(true);
+                        db.CloseInput(true);                   
                     }
 
                     doc.CloseAndSave(originalFileName);
-                    
+
+
+
+
+
+                    //doc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
+                    //using (Database db = doc.Database)
+                    //{
+                    //    db.SaveAs(newFileName, DwgVersion.Current);
+                    //}
                 }
                 else
                 {
