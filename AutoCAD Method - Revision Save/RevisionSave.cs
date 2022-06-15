@@ -4,6 +4,8 @@ using Autodesk.AutoCAD.Interop;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using System.IO;
+using Serilog;
+using Serilog.Sinks.File;
 
 namespace AutoCAD_Method___Revision_Save
 {
@@ -14,14 +16,28 @@ namespace AutoCAD_Method___Revision_Save
         /// </summary>
         public void Initialize()
         {
-            //
-            AcadApplication cadApp = (AcadApplication)Application.AcadApplication;
-            AcadToolbar tb = cadApp.MenuGroups.Item(0).Toolbars.Add("External Methods");
-            tb.Dock(Autodesk.AutoCAD.Interop.Common.AcToolbarDockStatus.acToolbarDockLeft);
-            string basePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
 
-            AcadToolbarItem tbButton0 = tb.AddToolbarButton(0, "Revision Save", "Saves the file while updating the revision numbers in the file name.", "REVISIONSAVE\n", null);
-            tbButton0.SetBitmaps(basePath + "/Save16.bmp", basePath + "/Save32.bmp");
+            Log.Information("Initialize");
+
+            try
+            {
+                AcadApplication cadApp = (AcadApplication)Application.AcadApplication;
+                AcadToolbar tb = cadApp.MenuGroups.Item(0).Toolbars.Add("External Methods");
+                tb.Dock(Autodesk.AutoCAD.Interop.Common.AcToolbarDockStatus.acToolbarDockLeft);
+                string basePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+                AcadToolbarItem tbButton0 = tb.AddToolbarButton(0, "Revision Save", "Saves the file while updating the revision numbers in the file name.", "REVISIONSAVE\n", null);
+                tbButton0.SetBitmaps(basePath + "/Save16.bmp", basePath + "/Save32.bmp");
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error(ex, "Something went wrong");
+            }
         }
 
         /// <summary>
@@ -29,7 +45,9 @@ namespace AutoCAD_Method___Revision_Save
         /// </summary>
         public void Terminate()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+
+            Log.Information("Terminate");
         }
 
         /// <summary>
