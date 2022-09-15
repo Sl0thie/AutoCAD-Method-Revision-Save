@@ -19,7 +19,7 @@ namespace AutoCAD_Method___Revision_Save
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
-                .WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File("logs/AutoCAD Revision Save - .txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
             Log.Information("Initialize");
