@@ -1,11 +1,16 @@
 ﻿namespace AutoCAD_Method___Revision_Save
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Reflection;
+
     using Autodesk.AutoCAD.ApplicationServices;
     using Autodesk.AutoCAD.DatabaseServices;
+    using Autodesk.AutoCAD.GraphicsInterface;
     using Autodesk.AutoCAD.Interop;
     using Autodesk.AutoCAD.Runtime;
+
     using Serilog;
     using Serilog.Sinks.File;
 
@@ -19,13 +24,20 @@
         /// </summary>
         public void Initialize()
         {
-            // Create and start logger.
+            // Start logging for the extension.
+            string logpath = "F:\\Logs";
+            if (!Directory.Exists(logpath))
+            {
+                _ = Directory.CreateDirectory(logpath);
+            }
+
+            logpath = logpath + "\\" + MethodBase.GetCurrentMethod().DeclaringType.Namespace + " - .txt";
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
-                .WriteTo.File("logs/AutoCAD Revision Save - .txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File(logpath, rollingInterval: RollingInterval.Day)
                 .CreateLogger();
-            Log.Information("Initialize");
+            Log.Information("Logging Started.");
 
             // Create a toolbar button and include it in AutoCAD.
             try
@@ -62,6 +74,27 @@
         {
             // Get AutoCAD objects.
             Document doc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
+            Database database = doc.Database;
+
+            // Save the drawing viewport positions.
+            doc.LockDocument();
+
+            // Save the drawing viewport positions.
+            // Get the current CVPORT.
+            //int currentCVPORT = System.Convert.ToInt32(Autodesk.AutoCAD.ApplicationServices.Core.Application.GetSystemVariable("CVPORT"));
+
+            // Get the other View Ports.
+            List<int> viewPortNumbers = new List<int>();
+            using (Transaction transaction = database.TransactionManager.StartTransaction())
+            {
+                transaction.Commit();
+
+                doc.Editor.UpdateTiledViewportsInDatabase();
+                doc.Editor.UpdateTiledViewportsFromDatabase();
+            }
+
+            // Switch back to original view port.
+            //Autodesk.AutoCAD.ApplicationServices.Core.Application.SetSystemVariable("CVPORT", currentCVPORT);
 
             if (doc.IsNamedDrawing)
             {
@@ -99,12 +132,15 @@
                         // Save current drawing to new file name.
                         db.SaveAs(newFileName, DwgVersion.Current);
 
+                        // Open the new file.
+                        _ = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.Open(newFileName, false);
+
                         // Close the original file.
                         db.CloseInput(true);
                         doc.CloseAndSave(originalFileName);
 
-                        // Open the new file.
-                        _ = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.Open(newFileName, false);
+                        //// Open the new file.
+                        //_ = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.Open(newFileName, false);
                     }
                 }
                 else
@@ -133,12 +169,16 @@
                         // Save the drawing to the new file name.
                         db.SaveAs(newFileName, DwgVersion.Current);
 
+                        // Open the drawing under the new file name.
+                        _ = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.Open(newFileName, false);
+
+
                         // Close the original file.
                         db.CloseInput(true);
                         doc.CloseAndSave(originalFileName);
 
-                        // Open the drawing under the new file name.
-                        _ = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.Open(newFileName, false);
+                        //// Open the drawing under the new file name.
+                        //_ = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.Open(newFileName, false);
 
                         // Rename the original file name.
                         File.Move(originalFileName, reFileName);
